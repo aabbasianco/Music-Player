@@ -26,6 +26,9 @@ class MainActivity2 : AppCompatActivity() {
     private val handler = Handler(Looper.getMainLooper())
     private var isPlaying = false
 
+    private lateinit var txtCurrentTime: TextView
+    private lateinit var txtTotalTime: TextView
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main2)
@@ -86,11 +89,16 @@ class MainActivity2 : AppCompatActivity() {
         btnRewind = findViewById(R.id.btnRewind)
         btnForward = findViewById(R.id.btnForward)
         btnPlayPause = findViewById(R.id.btnPlayPause)
+        txtCurrentTime = findViewById(R.id.txtCurrentTime)
+        txtTotalTime = findViewById(R.id.txtTotalTime)
     }
 
     private fun playMusic() {
         val music = musicList[position]
         txtTitle.text = music.title
+
+        val totalDuration = mediaPlayer?.duration ?: 0
+        txtTotalTime.text = formatTime(totalDuration)
 
         val albumArtUri = ContentUris.withAppendedId(
             Uri.parse("content://media/external/audio/albumart"),
@@ -118,11 +126,13 @@ class MainActivity2 : AppCompatActivity() {
             override fun run() {
                 mediaPlayer?.let {
                     seekBar.progress = it.currentPosition
+                    txtCurrentTime.text = formatTime(it.currentPosition)
                     handler.postDelayed(this, 500)
                 }
             }
         }, 0)
     }
+
 
     private fun nextMusic() {
         position = (position + 1) % musicList.size
@@ -140,4 +150,11 @@ class MainActivity2 : AppCompatActivity() {
         mediaPlayer?.release()
         mediaPlayer = null
     }
+
+    private fun formatTime(milliseconds: Int): String {
+        val minutes = (milliseconds / 1000) / 60
+        val seconds = (milliseconds / 1000) % 60
+        return String.format("%d:%02d", minutes, seconds)
+    }
+
 }
