@@ -50,6 +50,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == PERMISSION_CODE && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             loadMusic()
         } else {
@@ -61,7 +62,7 @@ class MainActivity : AppCompatActivity() {
         musicList = MusicUtils.getAllMusic(this)
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = MusicAdapter(musicList) { position ->
-            val intent = Intent(this, PlayerActivity::class.java)
+            val intent = Intent(this, MainActivity2::class.java)
             intent.putParcelableArrayListExtra("MUSIC_LIST", musicList)
             intent.putExtra("POSITION", position)
             startActivity(intent)

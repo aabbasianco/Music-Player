@@ -1,5 +1,8 @@
 package com.example.androidproject
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 
+@Parcelize
 data class Music(
     val id: Long,
     val title: String,
@@ -7,4 +10,4 @@ data class Music(
     val duration: Long,
     val data: String,
     val albumId: Long
-)
+) : Parcelable
