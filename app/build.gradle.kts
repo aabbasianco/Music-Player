@@ -37,11 +37,21 @@ android {
 
 dependencies {
 
+    // کتابخانه‌های اصلی خود پروژه
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
+
+    // ✔️ کتابخانه‌های جدیدی که باید اضافه کنی:
+    implementation(libs.androidx.recyclerview)
+    implementation(libs.androidx.cardview)
+    implementation(libs.androidx.media) // برای کنترل موسیقی و سرویس بک‌گراند
+
+    // اگر خواستی ExoPlayer به‌جای MediaPlayer استفاده کنی (اختیاری)
+    // implementation 'com.google.android.exoplayer:exoplayer:2.18.0'
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
