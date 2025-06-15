@@ -164,7 +164,7 @@ class MainActivity2 : AppCompatActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             registerReceiver(controlReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
         } else {
-            registerReceiver(controlReceiver, filter,Context.RECEIVER_NOT_EXPORTED)
+            registerReceiver(controlReceiver, filter,Context.RECEIVER_EXPORTED)
         }
     }
 
