@@ -3,6 +3,7 @@ package com.example.androidproject
 import android.Manifest
 import android.content.*
 import android.content.pm.PackageManager
+import android.graphics.BitmapFactory
 import android.media.AudioManager
 import android.net.Uri
 import android.media.MediaPlayer
@@ -231,13 +232,19 @@ class MainActivity2 : AppCompatActivity() {
     }
 
     private fun startMusicService() {
-        val intent = Intent(this, MusicService::class.java)
+        val music = musicList[position]
+        val intent = Intent(this, MusicService::class.java).apply {
+            putExtra("ALBUM_ID", music.albumId)
+        }
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForegroundService(intent)
         } else {
             startService(intent)
         }
     }
+
+
 
     override fun onDestroy() {
         super.onDestroy()
