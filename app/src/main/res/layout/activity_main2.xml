@@ -31,20 +31,35 @@
 
         <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/imgAlbumArt"
-        android:layout_width="300dp"
-        android:layout_height="300dp"
+        android:layout_width="350dp"
+        android:layout_height="350dp"
         android:scaleType="centerCrop"
         app:shapeAppearanceOverlay="@style/RoundedCornerImage"
         android:src="@drawable/ic_music_note" />
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="start"
+            android:orientation="vertical">
     <TextView
         android:id="@+id/txtTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Title"
-        android:textSize="20sp"
+        android:textSize="20dp"
         android:textStyle="bold"
         android:layout_marginTop="16dp" />
+
+            <TextView
+                android:id="@+id/txtArtist"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Artist Name"
+                android:textSize="16sp"
+            android:layout_marginTop="4dp" />
+
+        </LinearLayout>
 
     <SeekBar
         android:id="@+id/seekBar"
