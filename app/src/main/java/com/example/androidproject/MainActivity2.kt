@@ -3,6 +3,7 @@ package com.example.androidproject
 import android.Manifest
 import android.content.*
 import android.content.pm.PackageManager
+import android.media.AudioManager
 import android.net.Uri
 import android.media.MediaPlayer
 import android.os.Build
@@ -54,6 +55,8 @@ class MainActivity2 : AppCompatActivity() {
         }
     }
 
+    private lateinit var seekBarVolume: SeekBar
+    private lateinit var audioManager: AudioManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,6 +69,29 @@ class MainActivity2 : AppCompatActivity() {
                 return
             }
         }
+
+        seekBarVolume = findViewById(R.id.seekBarVolume)
+
+// گرفتن AudioManager برای کنترل صدا
+        audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+
+        val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+        val currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
+
+        seekBarVolume.max = maxVolume
+        seekBarVolume.progress = currentVolume
+
+        seekBarVolume.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                if (fromUser) {
+                    audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, progress, 0)
+                }
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
+
 
         musicList = intent.getParcelableArrayListExtra("MUSIC_LIST") ?: ArrayList()
         position = intent.getIntExtra("POSITION", 0)
