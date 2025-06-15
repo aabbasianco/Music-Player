@@ -187,50 +187,33 @@ class MusicService : Service() {
             .setContentTitle("در حال پخش موسیقی")
             .setContentText("کنترل از نوار وضعیت")
             .setSmallIcon(android.R.drawable.ic_media_play)
-            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setOnlyAlertOnce(true)
             .setOngoing(mediaPlayer.isPlaying)
             .setProgress(mediaPlayer.duration, mediaPlayer.currentPosition, false)
-
-        // دکمه‌های نوتیفیکیشن
-        builder.addAction(
-            android.R.drawable.ic_media_previous,
-            "قبلی",
-            createPendingIntent(ACTION_PREV)
-        )
-        builder.addAction(
-            android.R.drawable.ic_media_rew,
-            "10 ثانیه عقب",
-            createPendingIntent(ACTION_REWIND)
-        )
-
-        if (mediaPlayer.isPlaying) {
-            builder.addAction(
-                android.R.drawable.ic_media_pause,
-                "مکث",
+            .addAction(
+                android.R.drawable.ic_media_previous,
+                "قبلی",
+                createPendingIntent(ACTION_PREV)
+            )
+            .addAction(
+                if (mediaPlayer.isPlaying) android.R.drawable.ic_media_pause else android.R.drawable.ic_media_play,
+                if (mediaPlayer.isPlaying) "مکث" else "پخش",
                 createPendingIntent(ACTION_PLAY_PAUSE)
             )
-        } else {
-            builder.addAction(
-                android.R.drawable.ic_media_play,
-                "پخش",
-                createPendingIntent(ACTION_PLAY_PAUSE)
+            .addAction(
+                android.R.drawable.ic_media_next,
+                "بعدی",
+                createPendingIntent(ACTION_NEXT)
             )
-        }
-
-        builder.addAction(
-            android.R.drawable.ic_media_ff,
-            "10 ثانیه جلو",
-            createPendingIntent(ACTION_FORWARD)
-        )
-        builder.addAction(
-            android.R.drawable.ic_media_next,
-            "بعدی",
-            createPendingIntent(ACTION_NEXT)
-        )
+            .setStyle(
+                androidx.media.app.NotificationCompat.MediaStyle()
+                    .setShowActionsInCompactView(0, 1, 2)
+            )
 
         return builder.build()
     }
+
 
     private fun createPendingIntent(action: String): PendingIntent {
         val intent = Intent(this, MusicService::class.java).apply {
