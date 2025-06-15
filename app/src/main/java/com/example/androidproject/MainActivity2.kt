@@ -1,12 +1,18 @@
 package com.example.androidproject
 
+import android.Manifest
 import android.content.*
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.media.MediaPlayer
 import android.os.Build
 import android.os.Bundle
 import android.widget.*
+import androidx.annotation.RequiresPermission
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
+import com.example.yourapp.MusicService
 
 class MainActivity2 : AppCompatActivity() {
 
@@ -49,10 +55,19 @@ class MainActivity2 : AppCompatActivity() {
     }
 
 
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main2)
         initViews()
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 1)
+                return
+            }
+        }
 
         musicList = intent.getParcelableArrayListExtra("MUSIC_LIST") ?: ArrayList()
         position = intent.getIntExtra("POSITION", 0)
@@ -179,6 +194,8 @@ class MainActivity2 : AppCompatActivity() {
         }
     }
 
+
+
     override fun onDestroy() {
         super.onDestroy()
         unregisterReceiver(controlReceiver)
@@ -192,4 +209,5 @@ class MainActivity2 : AppCompatActivity() {
         val seconds = (milliseconds / 1000) % 60
         return String.format("%02d:%02d", minutes, seconds)
     }
+
 }

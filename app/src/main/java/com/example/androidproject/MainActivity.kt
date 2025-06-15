@@ -6,11 +6,15 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
+import androidx.annotation.RequiresPermission
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.yourapp.MusicService
 
 class MainActivity : AppCompatActivity() {
 
@@ -25,6 +29,13 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 1)
+                return
+            }
+        }
+
         recyclerView = findViewById(R.id.recyclerView)
 
         if (hasStoragePermission()) {
@@ -32,6 +43,8 @@ class MainActivity : AppCompatActivity() {
         } else {
             requestPermission()
         }
+
+        showTestNotification()
     }
 
     private fun hasStoragePermission(): Boolean {
@@ -67,5 +80,17 @@ class MainActivity : AppCompatActivity() {
             intent.putExtra("POSITION", position)
             startActivity(intent)
         }
+    }
+
+
+    @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
+    private fun showTestNotification() {
+        val builder = NotificationCompat.Builder(this, MusicService.CHANNEL_ID)
+            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setContentTitle("تست نوتیفیکیشن")
+            .setContentText("اگر این را می‌بینی، نوتیف درست کار می‌کند")
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+
+        NotificationManagerCompat.from(this).notify(999, builder.build())
     }
 }
