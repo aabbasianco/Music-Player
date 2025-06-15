@@ -127,6 +127,12 @@ class MainActivity2 : AppCompatActivity() {
         btnPrev.setOnClickListener { playPrevious() }
         btnForward.setOnClickListener { forward() }
         btnRewind.setOnClickListener { rewind() }
+
+        mediaPlayer?.start()
+        mediaPlayer?.setOnCompletionListener {
+            playNext()
+        }
+
     }
 
     private fun initViews() {
@@ -172,6 +178,9 @@ class MainActivity2 : AppCompatActivity() {
             setDataSource(music.data)
             prepare()
             start()
+            setOnCompletionListener {
+                playNext()
+            }
         }
 
         btnPlayPause.setImageResource(android.R.drawable.ic_media_pause)
@@ -182,6 +191,7 @@ class MainActivity2 : AppCompatActivity() {
 
         handler.post(updateSeekBarRunnable)
     }
+
 
 
     private fun togglePlayPause() {
