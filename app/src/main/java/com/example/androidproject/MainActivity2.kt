@@ -172,9 +172,27 @@ class MainActivity2 : AppCompatActivity() {
         val music = musicList[position]
         txtTitle.text = music.title
         txtArtist.text = music.artist
+
         val albumArtUri = Uri.parse("content://media/external/audio/albumart")
-        imgAlbumArt.setImageURI(Uri.withAppendedPath(albumArtUri, music.albumId.toString()))
+        val fullUri = Uri.withAppendedPath(albumArtUri, music.albumId.toString())
+
+        try {
+            // تلاش برای بارگذاری تصویر کاور
+            val inputStream = contentResolver.openInputStream(fullUri)
+            val bitmap = BitmapFactory.decodeStream(inputStream)
+            inputStream?.close()
+
+            if (bitmap != null) {
+                imgAlbumArt.setImageBitmap(bitmap)
+            } else {
+                imgAlbumArt.setImageResource(R.drawable.cover2)
+            }
+        } catch (e: Exception) {
+            // اگر مشکلی در باز کردن تصویر بود، تصویر پیش‌فرض رو بزار
+            imgAlbumArt.setImageResource(R.drawable.cover2)
+        }
     }
+
 
     private fun playMusic() {
         mediaPlayer?.release()

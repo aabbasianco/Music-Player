@@ -44,7 +44,7 @@ class MainActivity : AppCompatActivity() {
             requestPermission()
         }
 
-        showTestNotification()
+//        showTestNotification()
     }
 
     private fun hasStoragePermission(): Boolean {
