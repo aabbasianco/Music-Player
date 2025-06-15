@@ -34,6 +34,21 @@ class MainActivity2 : AppCompatActivity() {
         }
     }
 
+    private lateinit var seekBar: SeekBar
+    private lateinit var txtCurrentTime: TextView
+    private lateinit var txtTotalTime: TextView
+    private val handler = android.os.Handler()
+    private val updateSeekBarRunnable = object : Runnable {
+        override fun run() {
+            mediaPlayer?.let {
+                seekBar.progress = it.currentPosition
+                txtCurrentTime.text = formatTime(it.currentPosition)
+                handler.postDelayed(this, 500)
+            }
+        }
+    }
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main2)
@@ -49,6 +64,17 @@ class MainActivity2 : AppCompatActivity() {
             playMusic()
             startMusicService() // فقط برای نوتیفیکیشن
         }
+        seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                if (fromUser) {
+                    mediaPlayer?.seekTo(progress)
+                    txtCurrentTime.text = formatTime(progress)
+                }
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
 
         btnPlayPause.setOnClickListener { togglePlayPause() }
         btnNext.setOnClickListener { playNext() }
@@ -65,6 +91,9 @@ class MainActivity2 : AppCompatActivity() {
         btnRewind = findViewById(R.id.btnRewind)
         btnForward = findViewById(R.id.btnForward)
         btnPlayPause = findViewById(R.id.btnPlayPause)
+        seekBar = findViewById(R.id.seekBar)
+        txtCurrentTime = findViewById(R.id.txtCurrentTime)
+        txtTotalTime = findViewById(R.id.txtTotalTime)
     }
 
     private fun registerReceiverWithExportFlag() {
@@ -98,8 +127,16 @@ class MainActivity2 : AppCompatActivity() {
             prepare()
             start()
         }
+
         btnPlayPause.setImageResource(android.R.drawable.ic_media_pause)
+
+        val duration = mediaPlayer?.duration ?: 0
+        seekBar.max = duration
+        txtTotalTime.text = formatTime(duration)
+
+        handler.post(updateSeekBarRunnable)
     }
+
 
     private fun togglePlayPause() {
         mediaPlayer?.let {
@@ -147,5 +184,12 @@ class MainActivity2 : AppCompatActivity() {
         unregisterReceiver(controlReceiver)
         mediaPlayer?.release()
         mediaPlayer = null
+        handler.removeCallbacks(updateSeekBarRunnable)
+    }
+
+    private fun formatTime(milliseconds: Int): String {
+        val minutes = (milliseconds / 1000) / 60
+        val seconds = (milliseconds / 1000) % 60
+        return String.format("%02d:%02d", minutes, seconds)
     }
 }
