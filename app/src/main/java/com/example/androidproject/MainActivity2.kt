@@ -1,6 +1,7 @@
 package com.example.androidproject
 
 import android.content.ContentUris
+import android.content.Intent
 import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Bundle
@@ -97,9 +98,6 @@ class MainActivity2 : AppCompatActivity() {
         val music = musicList[position]
         txtTitle.text = music.title
 
-        val totalDuration = mediaPlayer?.duration ?: 0
-        txtTotalTime.text = formatTime(totalDuration)
-
         val albumArtUri = ContentUris.withAppendedId(
             Uri.parse("content://media/external/audio/albumart"),
             music.albumId
@@ -110,16 +108,23 @@ class MainActivity2 : AppCompatActivity() {
         mediaPlayer = MediaPlayer().apply {
             setDataSource(music.data)
             prepare()
-            start()
+            start()  // ⬅️ دقیقاً بعد از این خط، سرویس رو استارت می‌زنیم
             setOnCompletionListener {
-                nextMusic() // پخش خودکار ترک بعدی
+                nextMusic()
             }
         }
+
+        // ⬇️ اینجا کد استارت سرویس رو بذار
+        val serviceIntent = Intent(this, MusicService::class.java)
+        serviceIntent.putExtra("MUSIC_PATH", music.data)
+        startService(serviceIntent)
 
         btnPlayPause.setImageResource(android.R.drawable.ic_media_pause)
         seekBar.max = mediaPlayer?.duration ?: 0
         updateSeekBar()
+        txtTotalTime.text = formatTime(mediaPlayer?.duration ?: 0)
     }
+
 
     private fun updateSeekBar() {
         handler.postDelayed(object : Runnable {
