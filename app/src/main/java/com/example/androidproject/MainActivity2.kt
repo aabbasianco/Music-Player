@@ -19,11 +19,13 @@ class MainActivity2 : AppCompatActivity() {
 
     private lateinit var imgAlbumArt: ImageView
     private lateinit var txtTitle: TextView
+    private lateinit var txtArtist: TextView
     private lateinit var btnPrev: ImageButton
     private lateinit var btnNext: ImageButton
     private lateinit var btnRewind: ImageButton
     private lateinit var btnForward: ImageButton
     private lateinit var btnPlayPause: ImageButton
+
 
     private lateinit var musicList: ArrayList<Music>
     private var position = 0
@@ -146,6 +148,7 @@ class MainActivity2 : AppCompatActivity() {
         seekBar = findViewById(R.id.seekBar)
         txtCurrentTime = findViewById(R.id.txtCurrentTime)
         txtTotalTime = findViewById(R.id.txtTotalTime)
+        txtArtist = findViewById(R.id.txtArtist)
     }
 
     private fun registerReceiverWithExportFlag() {
@@ -167,6 +170,7 @@ class MainActivity2 : AppCompatActivity() {
     private fun showMusicInfo() {
         val music = musicList[position]
         txtTitle.text = music.title
+        txtArtist.text = music.artist
         val albumArtUri = Uri.parse("content://media/external/audio/albumart")
         imgAlbumArt.setImageURI(Uri.withAppendedPath(albumArtUri, music.albumId.toString()))
     }
