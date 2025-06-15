@@ -32,10 +32,23 @@ class MusicAdapter(
         holder.txtTitle.text = music.title
         holder.txtArtist.text = music.artist
 
+        val context = holder.itemView.context
         val albumArtUri = Uri.parse("content://media/external/audio/albumart")
         val imageUri = ContentUris.withAppendedId(albumArtUri, music.albumId)
-        holder.imgCover.setImageURI(imageUri)
+
+        try {
+            val inputStream = context.contentResolver.openInputStream(imageUri)
+            if (inputStream != null) {
+                holder.imgCover.setImageURI(imageUri)
+                inputStream.close()
+            } else {
+                holder.imgCover.setImageResource(R.drawable.cover2)
+            }
+        } catch (e: Exception) {
+            holder.imgCover.setImageResource(R.drawable.cover2)
+        }
 
         holder.itemView.setOnClickListener { onItemClick(position) }
     }
+
 }
