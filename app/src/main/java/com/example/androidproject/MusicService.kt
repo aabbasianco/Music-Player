@@ -35,6 +35,9 @@ class MusicService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val albumId = intent?.getLongExtra("ALBUM_ID", -1) ?: -1
+        val title = intent?.getStringExtra("TITLE") ?: "Unknown"
+        val artist = intent?.getStringExtra("ARTIST") ?: "Unknown"
+
         if (albumId != -1L) {
             val uri = Uri.parse("content://media/external/audio/albumart/$albumId")
             try {
@@ -46,8 +49,7 @@ class MusicService : Service() {
             }
         }
 
-        // نمایش نوتیف
-        val notification = buildNotification()
+        val notification = buildNotification(title, artist)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
         } else {
@@ -58,6 +60,7 @@ class MusicService : Service() {
     }
 
 
+
     override fun onDestroy() {
         super.onDestroy()
         stopForeground(true)
@@ -65,15 +68,14 @@ class MusicService : Service() {
 
     override fun onBind(intent: Intent?): IBinder? = null
 
-    private fun buildNotification(): Notification {
-        val albumArtBitmap = intentBitmap ?: BitmapFactory.decodeResource(resources, R.drawable.cover2)
+    private fun buildNotification(title: String, artist: String): Notification {
+        val bitmap = albumArtBitmap ?: BitmapFactory.decodeResource(resources, R.drawable.cover2)
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("در حال پخش موسیقی")
-            .setContentText("برای کنترل پخش، از نوار وضعیت استفاده کنید")
+            .setContentTitle(title)
+            .setContentText(artist)
             .setSmallIcon(android.R.drawable.ic_media_play)
-            .setLargeIcon(albumArtBitmap)
-            .setLargeIcon(albumArtBitmap)
+            .setLargeIcon(bitmap)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setOnlyAlertOnce(true)
             .setOngoing(true)
@@ -83,6 +85,7 @@ class MusicService : Service() {
             .setStyle(androidx.media.app.NotificationCompat.MediaStyle().setShowActionsInCompactView(0, 1, 2))
             .build()
     }
+
 
 
     private fun createPendingIntent(action: String): PendingIntent {

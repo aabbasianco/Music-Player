@@ -235,6 +235,8 @@ class MainActivity2 : AppCompatActivity() {
         val music = musicList[position]
         val intent = Intent(this, MusicService::class.java).apply {
             putExtra("ALBUM_ID", music.albumId)
+            putExtra("TITLE", music.title)
+            putExtra("ARTIST", music.artist)
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -243,6 +245,7 @@ class MainActivity2 : AppCompatActivity() {
             startService(intent)
         }
     }
+
 
 
 
