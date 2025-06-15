@@ -1,23 +1,11 @@
 package com.example.yourapp
 
-import android.Manifest
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.PendingIntent
-import android.app.Service
-import android.content.Context
+import android.app.*
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
-import android.media.MediaPlayer
 import android.os.Build
-import android.os.Handler
 import android.os.IBinder
-import androidx.annotation.RequiresPermission
-import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
 import com.example.androidproject.R
 
 class MusicService : Service() {
@@ -33,49 +21,19 @@ class MusicService : Service() {
         const val ACTION_REWIND = "action_rewind"
     }
 
-    private lateinit var mediaPlayer: MediaPlayer
-    private lateinit var notificationManager: NotificationManagerCompat
-    private val handler = Handler()
-    private val updateNotificationRunnable = object : Runnable {
-        @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
-        override fun run() {
-            if (mediaPlayer.isPlaying) {
-                notificationManager.notify(NOTIFICATION_ID, buildNotification())
-                handler.postDelayed(this, 1000) // هر ۱ ثانیه آپدیت
-            }
-        }
-    }
-
     override fun onCreate() {
         super.onCreate()
         createNotificationChannel()
-
-        notificationManager = NotificationManagerCompat.from(this)
-
-        // اینجا آهنگ نمونه از res/raw قرار بده، اسمش sample_music هست:
-        mediaPlayer = MediaPlayer.create(this, R.raw.sample1)
-
-        mediaPlayer.setOnCompletionListener {
-            // وقتی آهنگ تمام شد سرویس را متوقف کن یا کار دلخواه انجام بده
-            stopSelf()
-        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        // ارسال فرمان‌ها به اکتیویتی
         intent?.action?.let { action ->
-            when (action) {
-                ACTION_PLAY_PAUSE -> {
-                    if (mediaPlayer.isPlaying) pauseMusic() else playMusic()
-                }
-                ACTION_NEXT -> playNext()
-                ACTION_PREV -> playPrevious()
-                ACTION_FORWARD -> forward()
-                ACTION_REWIND -> rewind()
-            }
+            sendBroadcast(Intent(action))
         }
 
+        // نمایش نوتیف
         val notification = buildNotification()
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
         } else {
@@ -87,144 +45,31 @@ class MusicService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        handler.removeCallbacks(updateNotificationRunnable)
-        mediaPlayer.release()
+        stopForeground(true)
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
 
-    private fun playMusic() {
-        if (!mediaPlayer.isPlaying) {
-            mediaPlayer.start()
-            handler.post(updateNotificationRunnable)
-            updateNotification()
-        }
-    }
-
-
-    private fun pauseMusic() {
-        if (mediaPlayer.isPlaying) {
-            mediaPlayer.pause()
-            handler.removeCallbacks(updateNotificationRunnable)
-            if (ActivityCompat.checkSelfPermission(
-                    this,
-                    Manifest.permission.POST_NOTIFICATIONS
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                // TODO: Consider calling
-                //    ActivityCompat#requestPermissions
-                // here to request the missing permissions, and then overriding
-                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                //                                          int[] grantResults)
-                // to handle the case where the user grants the permission. See the documentation
-                // for ActivityCompat#requestPermissions for more details.
-                return
-            }
-            updateNotification()
-        }
-    }
-
-    private fun playNext() {
-        // اینجا کد آهنگ بعدی را بگذار، برای نمونه ریست می‌کنیم
-        mediaPlayer.seekTo(0)
-        playMusic()
-    }
-
-    private fun playPrevious() {
-        // اینجا کد آهنگ قبلی را بگذار، برای نمونه ریست می‌کنیم
-        mediaPlayer.seekTo(0)
-        playMusic()
-    }
-
-    private fun forward() {
-        val newPos = mediaPlayer.currentPosition + 10000
-        mediaPlayer.seekTo(if (newPos < mediaPlayer.duration) newPos else mediaPlayer.duration)
-        if (ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.POST_NOTIFICATIONS
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return
-        }
-        updateNotification()
-    }
-
-    private fun rewind() {
-        val newPos = mediaPlayer.currentPosition - 10000
-        mediaPlayer.seekTo(if (newPos > 0) newPos else 0)
-        if (ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.POST_NOTIFICATIONS
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return
-        }
-        updateNotification()
-    }
-
-    @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
-    private fun updateNotification() {
-        val notification = buildNotification()
-        notificationManager.notify(NOTIFICATION_ID, notification)
-    }
-
     private fun buildNotification(): Notification {
-        val builder = NotificationCompat.Builder(this, CHANNEL_ID)
+        return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("در حال پخش موسیقی")
-            .setContentText("کنترل از نوار وضعیت")
+            .setContentText("برای کنترل پخش، از نوار وضعیت استفاده کنید")
             .setSmallIcon(android.R.drawable.ic_media_play)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setOnlyAlertOnce(true)
-            .setOngoing(mediaPlayer.isPlaying)
-            .setProgress(mediaPlayer.duration, mediaPlayer.currentPosition, false)
-            .addAction(
-                android.R.drawable.ic_media_previous,
-                "قبلی",
-                createPendingIntent(ACTION_PREV)
-            )
-            .addAction(
-                if (mediaPlayer.isPlaying) android.R.drawable.ic_media_pause else android.R.drawable.ic_media_play,
-                if (mediaPlayer.isPlaying) "مکث" else "پخش",
-                createPendingIntent(ACTION_PLAY_PAUSE)
-            )
-            .addAction(
-                android.R.drawable.ic_media_next,
-                "بعدی",
-                createPendingIntent(ACTION_NEXT)
-            )
-            .setStyle(
-                androidx.media.app.NotificationCompat.MediaStyle()
-                    .setShowActionsInCompactView(0, 1, 2)
-            )
-
-        return builder.build()
+            .setOngoing(true)
+            .addAction(android.R.drawable.ic_media_previous, "قبلی", createPendingIntent(ACTION_PREV))
+            .addAction(android.R.drawable.ic_media_pause, "مکث/پخش", createPendingIntent(ACTION_PLAY_PAUSE))
+            .addAction(android.R.drawable.ic_media_next, "بعدی", createPendingIntent(ACTION_NEXT))
+            .setStyle(androidx.media.app.NotificationCompat.MediaStyle().setShowActionsInCompactView(0, 1, 2))
+            .build()
     }
-
 
     private fun createPendingIntent(action: String): PendingIntent {
         val intent = Intent(this, MusicService::class.java).apply {
             this.action = action
         }
-        return PendingIntent.getService(
-            this,
-            action.hashCode(),
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
+        return PendingIntent.getService(this, action.hashCode(), intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
     }
 
     private fun createNotificationChannel() {
@@ -233,8 +78,9 @@ class MusicService : Service() {
                 CHANNEL_ID,
                 "کانال موسیقی",
                 NotificationManager.IMPORTANCE_LOW
-            )
-            channel.description = "کانال مربوط به نوتیفیکیشن موزیک پلیر"
+            ).apply {
+                description = "نوتیفیکیشن مربوط به پخش موسیقی"
+            }
             val manager = getSystemService(NotificationManager::class.java)
             manager.createNotificationChannel(channel)
         }
