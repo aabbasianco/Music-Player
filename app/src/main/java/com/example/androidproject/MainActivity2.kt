@@ -186,6 +186,7 @@ class MainActivity2 : AppCompatActivity() {
             setOnCompletionListener {
                 playNext()
             }
+            updateNotification()
         }
 
         btnPlayPause.setImageResource(android.R.drawable.ic_media_pause)
@@ -261,6 +262,16 @@ class MainActivity2 : AppCompatActivity() {
         val minutes = (milliseconds / 1000) / 60
         val seconds = (milliseconds / 1000) % 60
         return String.format("%02d:%02d", minutes, seconds)
+    }
+
+    private fun updateNotification() {
+        val music = musicList[position]
+        val intent = Intent("UPDATE_NOTIFICATION").apply {
+            putExtra("TITLE", music.title)
+            putExtra("ARTIST", music.artist)
+            putExtra("ALBUM_ID", music.albumId)
+        }
+        sendBroadcast(intent)
     }
 
 

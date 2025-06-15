@@ -1,7 +1,11 @@
 package com.example.yourapp
 
+import android.annotation.SuppressLint
 import android.app.*
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.ServiceInfo
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -27,10 +31,24 @@ class MusicService : Service() {
         const val ACTION_FORWARD = "action_forward"
         const val ACTION_REWIND = "action_rewind"
     }
+    private val updateReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == "UPDATE_NOTIFICATION") {
+                val title = intent.getStringExtra("TITLE") ?: "Unknown"
+                val artist = intent.getStringExtra("ARTIST") ?: "Unknown"
+                val albumId = intent.getLongExtra("ALBUM_ID", -1L)
+                updateNotification(title, artist, albumId)
+            }
+        }
+    }
+
     private var intentBitmap: Bitmap? = null
+    @SuppressLint("UnspecifiedRegisterReceiverFlag")
     override fun onCreate() {
         super.onCreate()
         createNotificationChannel()
+        val filter = IntentFilter("UPDATE_NOTIFICATION")
+        registerReceiver(updateReceiver, filter)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -63,6 +81,7 @@ class MusicService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        unregisterReceiver(updateReceiver)
         stopForeground(true)
     }
 
@@ -108,4 +127,21 @@ class MusicService : Service() {
             manager.createNotificationChannel(channel)
         }
     }
+
+    fun updateNotification(title: String, artist: String, albumId: Long) {
+        // بارگذاری عکس کاور
+        val uri = Uri.parse("content://media/external/audio/albumart/$albumId")
+        try {
+            contentResolver.openInputStream(uri)?.use {
+                albumArtBitmap = BitmapFactory.decodeStream(it)
+            }
+        } catch (e: Exception) {
+            albumArtBitmap = BitmapFactory.decodeResource(resources, R.drawable.cover2)
+        }
+
+        val notification = buildNotification(title, artist)
+        val manager = getSystemService(NotificationManager::class.java)
+        manager.notify(NOTIFICATION_ID, notification)
+    }
+
 }
